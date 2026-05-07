@@ -80,24 +80,17 @@ Name: nodejs-app-ec2
 
 Give tag : key = Name , value = CodeDeployTarget
 
-
 AMI: Amazon Linux 2
-
 
 Type: t2.micro
 
-
 Key pair: any (for emergency access, but you won’t use SSH)
-
 
 Network settings:
 
-
 Security group:
 
-
 Allow HTTP (80) from 0.0.0.0/0
-
 
 IAM instance profile: select EC2-CodeDeploy-Role
 
@@ -112,52 +105,36 @@ IAM instance profile: select EC2-CodeDeploy-Role
 7. systemctl start codedeploy-agent
 8. systemctl enable codedeploy-agent
 
-
 Step :3. CodeDeploy application & deployment group
 3.1 Application
 Go to CodeDeploy → Applications → Create application
 
-
 Name: Nodejs-app
-
 
 Compute platform: EC2/On-premises
 
-
 Create
-
-
 
 3.2 Deployment group
 Open Nodejs-app → Create deployment group
 
-
 Name: NodejsApp-DeploymentGroup
-
 
 Service role: CodeDeploy-Service-Role
 
-
 Environment:
-
 
 Amazon EC2 instances
 
-
 Tag:
-
 
 Key: Name
 
-
 Value: CodeDeployTarget
-
 
 Deployment configuration: CodeDeployDefault.AllAtOnce
 
-
 Load balancer: unchecked (leave it if needed)
-
 
 Create deployment group
 
@@ -165,41 +142,30 @@ Step:4. CodeBuild project (Node.js build)
 4.1 Create project
 Go to CodeBuild → Build projects → Create build project
 
-
 name: Nodejs-app-build
-
 
 4.2 Source
 Source provider: GitHub
-
 
 For creation, just link to your repo (connect with your github); CodePipeline will actually provide the source later.	
 4.3 Environment
 Environment image: Managed image
 
-
 OS: Amazon Linux 2
-
 
 Runtime: Standard
 
-
 Image: default latest
-
 
 Environment type: Linux
 
-
 Service role: select CodeBuild-Service-Role
 
-
 Allow CodeBuild to modify this role: Yes
-
 
 4.4 Buildspec
 Use a buildspec file
  (so it uses buildspec.yml from repo root)
-
 
 4.5 Artifacts
 Because in your UI you only see No artifacts and S3:
@@ -213,56 +179,38 @@ Step:5. CodePipeline (GitHub → CodeBuild → CodeDeploy)
 5.1 Start pipeline creation 
 Go to CodePipeline → Pipelines → Create pipeline
 
-
 On the first screen (Templates), choose:
-
 
 Category: Build custom pipeline
 
-
 Template: Build custom pipeline
 
-
 Click Next
-
-
 
 5.2 Step 2 – Pipeline settings
 Pipeline name: Nodejs-Full-Pipeline
 
-
 Service role:
-
 
 Use existing: CodePipeline-Service-Role
 
-
 Or let it create a new one
-
 
 Artifact store: default S3 (ok)
 
-
 Click Next
-
-
 
 5.3 Step 3 – Source (GitHub via CodeConnections)
 Source provider: GitHub (via GitHub App)
 
-
 Connection:
-
 
 Choose your existing CodeConnections ARN
  (or Connect to GitHub, authorize, then come back)
 
-
 Repository name:
 
-
 Ensure it is set to Yaswanthy23/CICD-working
-
 
 If “Not Found” shows, type full path manually:
  Yaswanthy23/CICD-working
@@ -273,13 +221,9 @@ Default branch: main
 
 Output artifact format: CodePipeline default
 
-
 Optional: turn on Webhook (trigger on push)
 
-
 Click Next
-
-
 
 5.4 Step 4 – Build stage 
 		Sometimes it not works properly so skip it for now , we can add it later
@@ -290,12 +234,9 @@ Deploy provider: AWS CodeDeploy
 
 Region: ap-south-1
 
-
 Application name: Nodejs-app
 
-
 Deployment group: NodejsApp-DeploymentGroup
-
 
 Click Next
 5.6 Step 6 & 7 – Review & Create
@@ -311,53 +252,38 @@ Open CodePipeline → Nodejs-Full-Pipeline
 
 Click Edit (top-right)
 
-
 6.1 Add Build stage
 Click + Add stage between Source and Deploy
 
-
 Stage name: Build
 
-
 Click Add stage
-
 
 Inside the new Build stage:
 Click + Add action group
 
-
 Fill:
 Action name: CodeBuildAction
 
-
 Action provider: AWS CodeBuild
 
-
-Region: ap-south-1
-
+region: ap-south-1
 
 Input artifacts:
 
-
 Select SourceArtifact (or the source artifact name created by the Source stage)
-
 
 Project name:
 
-
 Choose Nodejs-app-build from dropdown
-
 
 Output artifacts:
 
-
 Type: BuildArtifact
-
 
 Click Done.
 6.2 Save pipeline
 Click Save
-
 
 Confirm edits
 Step:7. Run the pipeline
